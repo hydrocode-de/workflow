@@ -11,18 +11,17 @@ export interface WorkflowTool {
     name: string;
     freezed: boolean;
     [key: string]: any;
-    connected: boolean;
 }
 
 export interface WorkflowData {
     dataset?: {id: string, type: string};
     tools: WorkflowTool[];
-    connected: boolean;
 }
 
 const WorkflowPage: React.FC = () => {
     // create a state to hold the workflow data
-    const [workflow, setWorkflow] = useState<WorkflowData>({tools: [], connected: false});
+    const [workflow, setWorkflow] = useState<WorkflowData>({tools: []});
+    const [connected, setConnected] = useState<boolean>(false);
 
     const addTool = (toolName: string) => {
         // build the workflow tool
@@ -47,7 +46,7 @@ const WorkflowPage: React.FC = () => {
                         <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
                             Workflow Builder
                         </Typography>
-                        <Button color="inherit" disabled={!workflow.connected}>RUN</Button>
+                        <Button color="inherit" disabled={!connected}>RUN</Button>
                     </Toolbar>
                 </AppBar>
             </Box>
@@ -105,13 +104,13 @@ const WorkflowPage: React.FC = () => {
                                 </ListItemButton>
                             </List>
                         </Box>
-                        <Button variant="contained" color="primary" disabled={!workflow.connected}>RUN</Button>
+                        <Button variant="contained" color="primary" disabled={!connected}>RUN</Button>
                     </Paper>
                 </Grid>
 
                 <Grid item xs={12} md={8} lg={9}>
                     <Paper elevation={5} sx={{height: '100%'}}>
-                        <Workflow workflow={workflow} />
+                        <Workflow workflow={workflow} onConnectChange={connected => setConnected(connected)} />
                     </Paper>
                 </Grid>
 

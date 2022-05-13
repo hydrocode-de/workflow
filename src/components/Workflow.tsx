@@ -5,22 +5,24 @@ import { WorkflowData, WorkflowTool } from '../pages/WorkflowPage';
 
 interface WorkflowProps {
     workflow: WorkflowData;
+    onConnectChange: (connected: boolean) => void;
 }
 
 const ALLOWED_CONNECTIONS: {[key:string]: string[]} = {
-    dataLoader: ['resample', 'variogram', 'result'],
-    resample: ['variogram', 'result'],
-    variogram: ['kriging', 'simulation', 'result'],
-    kriging: ['resample', 'result'],
-    simulation: ['resample', 'result'],
-    result: []
+    dataLoader: ['resample', 'variogram', 'resultView'],
+    resample: ['variogram', 'resultView'],
+    variogram: ['kriging', 'simulation', 'resultView'],
+    kriging: ['resample', 'resultView'],
+    simulation: ['resample', 'resultView'],
+    resultView: []
 };
 
-const Workflow: React.FC<WorkflowProps> = ({ workflow }) => {
+const Workflow: React.FC<WorkflowProps> = ({ workflow, onConnectChange }) => {
     // create a state for nodes and edges
     const [nodes, setNodes] = useState<any[]>([]);
     const [edges, setEdges] = useState<any[]>([]);
 
+    // bind all workflow tools into a graph representation
     useEffect(() => {
         const addNode = (toolName: string, index: number) => {
             const toolId = `${toolName}_${index}`;
@@ -47,6 +49,15 @@ const Workflow: React.FC<WorkflowProps> = ({ workflow }) => {
         setNodes(newNodes);
 
     }, [workflow]);
+
+    // make sure to set the connected state and report to parent.
+    useEffect(() => {
+        // check if there is any node without connection
+        const isConnected = nodes.every(n => edges.some(e => e.target === n.id || e.source === n.id)) && nodes.length > 0 && edges.length > 0;
+
+        // report to parent
+        onConnectChange(isConnected);
+    }, [nodes, edges, onConnectChange]);
 
     const onConnect = useCallback(
         (changes: any) => {
