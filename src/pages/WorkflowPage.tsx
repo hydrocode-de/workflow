@@ -1,11 +1,14 @@
 import { useState } from "react";
 
-import { AppBar, Avatar, Box, Button, Grid, List, ListItemAvatar, ListItemButton, ListItemText, Paper, Toolbar, Typography } from "@mui/material";
+import { AppBar, Avatar, Backdrop, Box, Button, CircularProgress, Grid, List, ListItemAvatar, ListItemButton, ListItemText, Paper, Toolbar, Typography } from "@mui/material";
 import { DataArray, GridOn, ShowChart, ScatterPlot, Repeat, BarChart } from '@mui/icons-material';
-import cloneDeep from 'lodash.clonedeep';
+import axios from 'axios';
 
 
 import Workflow from "../components/Workflow";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store";
+import { addTool } from "../features/workflow";
 
 export interface WorkflowTool {
     name: string;
@@ -19,22 +22,43 @@ export interface WorkflowData {
 }
 
 const WorkflowPage: React.FC = () => {
-    // create a state to hold the workflow data
-    const [workflow, setWorkflow] = useState<WorkflowData>({tools: []});
-    const [connected, setConnected] = useState<boolean>(false);
+    // get dispatcher
+    const dispatch = useDispatch();
 
-    const addTool = (toolName: string) => {
+    // subscribe to connected state
+    const connected = useSelector((state: RootState) => state.workflow.connected);
+    const hasDataLoader = useSelector((state: RootState) => state.workflow.tools.findIndex(t => t.name === 'dataLoader') > 0);
+
+    // graph state
+    const graphData = useSelector((state: RootState) => ({graph: state.workflow.graph, graphProps: state.workflow.graphProps}))
+    const [pending, setPending] = useState<boolean>(false);
+
+    // handler if the user wants a new tool in the workflow
+    const onAddTool = (toolName: string) => {
         // build the workflow tool
         let tool: WorkflowTool;
         if (['dataLoader', 'resultView'].includes(toolName)) {
-            tool = {name: toolName, freezed: true, connected: false};
+            tool = {name: toolName, freezed: true};
         } else {
-            tool = {name: toolName, freezed: false, connected: false};
+            tool = {name: toolName, freezed: false};
         }
 
-        // set the new state
-        const tools = cloneDeep([...workflow.tools, tool]);
-        setWorkflow({...workflow, tools: tools});
+        // dispatch the new tool
+        dispatch(addTool(tool));
+    }
+
+    // run handler
+    const onRun = () => {
+        // set pending
+        setPending(true);
+
+        // send the data to the backend, to create a new workflow
+        axios.post('http://localhost:5000/build', graphData)
+        .then(res => {
+            console.log(res.data);
+        })
+        .catch(err => console.log(err))
+        .finally(() => setPending(false));
     }
 
     return (
@@ -46,7 +70,7 @@ const WorkflowPage: React.FC = () => {
                         <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
                             Workflow Builder
                         </Typography>
-                        <Button color="inherit" disabled={!connected}>RUN</Button>
+                        <Button color="inherit" disabled={!connected} onClick={onRun}>RUN</Button>
                     </Toolbar>
                 </AppBar>
             </Box>
@@ -61,42 +85,42 @@ const WorkflowPage: React.FC = () => {
                                 Tools
                             </Typography>
                             <List>
-                                <ListItemButton onClick={() => addTool('dataLoader')}>
+                                <ListItemButton onClick={() => onAddTool('dataLoader')}>
                                     <ListItemAvatar>
                                         <Avatar><DataArray /></Avatar>
                                     </ListItemAvatar>
                                     <ListItemText primary="Dataset Loader" secondary="Currently 13 datasets available" />
                                 </ListItemButton>
                                 
-                                <ListItemButton disabled={workflow.tools.findIndex(t => t.name === 'dataLoader') < 0} onClick={() => addTool('resample')}>
+                                <ListItemButton disabled={hasDataLoader} onClick={() => onAddTool('resample')}>
                                     <ListItemAvatar>
                                         <Avatar><ScatterPlot /></Avatar>
                                     </ListItemAvatar>
                                     <ListItemText primary="Resample field" secondary="Create a sample from a field" />
                                 </ListItemButton>
 
-                                <ListItemButton disabled={workflow.tools.findIndex(t => t.name === 'dataLoader') < 0} onClick={() => addTool('variogram')}>
+                                <ListItemButton disabled={hasDataLoader} onClick={() => onAddTool('variogram')}>
                                     <ListItemAvatar>
                                         <Avatar><ShowChart /></Avatar>
                                     </ListItemAvatar>
                                     <ListItemText primary="Estimate variogram" secondary="Estimate a variogram for a sample" />
                                 </ListItemButton>
 
-                                <ListItemButton disabled={workflow.tools.findIndex(t => t.name === 'dataLoader') < 0} onClick={() => addTool('kriging')}>
+                                <ListItemButton disabled={hasDataLoader} onClick={() => onAddTool('kriging')}>
                                     <ListItemAvatar>
                                         <Avatar><GridOn /></Avatar>
                                     </ListItemAvatar>
                                     <ListItemText primary="Kriging" secondary="Interpolate using Kriging" />
                                 </ListItemButton>
 
-                                <ListItemButton disabled={workflow.tools.findIndex(t => t.name === 'dataLoader') < 0} onClick={() => addTool('simulation')}>
+                                <ListItemButton disabled={hasDataLoader} onClick={() => onAddTool('simulation')}>
                                     <ListItemAvatar>
                                         <Avatar><Repeat /></Avatar>
                                     </ListItemAvatar>
                                     <ListItemText primary="Simulation" secondary="Run geostatistical simulations" />
                                 </ListItemButton>
 
-                                <ListItemButton disabled={workflow.tools.findIndex(t => t.name === 'dataLoader') < 0} onClick={() => addTool('resultView')}>
+                                <ListItemButton disabled={hasDataLoader} onClick={() => onAddTool('resultView')}>
                                     <ListItemAvatar>
                                         <Avatar><BarChart /></Avatar>
                                     </ListItemAvatar>
@@ -104,17 +128,22 @@ const WorkflowPage: React.FC = () => {
                                 </ListItemButton>
                             </List>
                         </Box>
-                        <Button variant="contained" color="primary" disabled={!connected}>RUN</Button>
+                        <Button variant="contained" color="primary" disabled={!connected} onClick={onRun}>RUN</Button>
                     </Paper>
                 </Grid>
 
                 <Grid item xs={12} md={8} lg={9}>
                     <Paper elevation={5} sx={{height: '100%'}}>
-                        <Workflow workflow={workflow} onConnectChange={connected => setConnected(connected)} />
+                        <Workflow />
                     </Paper>
                 </Grid>
 
             </Grid>
+
+            {/* Backdrop */}
+            <Backdrop sx={{color: '#fff', zIndex: 99}} open={pending}>
+                <CircularProgress color="inherit" />
+            </Backdrop> 
         </>
     );
 }
