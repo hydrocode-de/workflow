@@ -4,14 +4,11 @@ import ReactFlow, { applyNodeChanges, applyEdgeChanges, addEdge } from 'react-fl
 import { useDispatch, useSelector } from 'react-redux';
 import { setConnected, setGraph, updateGraphProps } from '../features/workflow';
 import { Graph } from '../graph.model';
-import { WorkflowData, WorkflowTool } from '../pages/WorkflowPage';
 import { RootState } from '../store';
+
+// import tools
 import DataLoaderTool from './DataLoaderTool';
 
-interface WorkflowProps {
-    workflow: WorkflowData;
-    onConnectChange: (connected: boolean) => void;
-}
 
 const ALLOWED_CONNECTIONS: {[key:string]: string[]} = {
     dataLoader: ['resample', 'variogram', 'resultView'],
@@ -65,7 +62,7 @@ const Workflow: React.FC = () => {
         const newNodes = tools.map((tool, index) => addNode(tool.name, index));
         setNodes(newNodes);
 
-    }, [tools]);
+    }, [tools, dispatch]);
 
     // make sure to set the connected state and report to parent.
     useEffect(() => {
