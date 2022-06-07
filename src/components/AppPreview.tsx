@@ -28,7 +28,7 @@ const AppPreview: React.FC<React.PropsWithChildren<AppPreviewProps>> = ({ imgSrc
     const thumbnail = (
         <CardMedia 
             component="img"
-            sx={[{width: width || 300, height: height || 300, objectFit: 'contain'}, {'&:hover': {transform: 'sepia(0.5)'}}]}
+            sx={[{width: width || 300, height: height || 300}, {'&:hover': {transform: 'sepia(0.5)'}}]}
             image={imgSrc}
             alt="App thumbnail"
         />
