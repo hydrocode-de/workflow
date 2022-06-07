@@ -21,7 +21,7 @@ function App() {
 
         <Route path="/learn" element={<LearningGeostatPage />} />
 
-        <Route path="/uncertain" element={<LearningGeostatPage />} />
+        <Route path="/uncertain" element={<UncertainGeostatPage />} />
 
         <Route path="*" element={<HomePage />} />
 
