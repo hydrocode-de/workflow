@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import WorkflowPage from './pages/WorkflowPage';
 import LearningGeostatPage from './pages/LearningGeostatPage';
 import UncertainGeostatPage from './pages/UncertainGeostatPage';
+import KrigingPage from './pages/KrigingPage';
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
         <Route path="/learn" element={<LearningGeostatPage />} />
 
         <Route path="/uncertain" element={<UncertainGeostatPage />} />
+
+        <Route path="/kriging" element={<KrigingPage />} />
 
         <Route path="*" element={<HomePage />} />
 

@@ -67,7 +67,18 @@ const HomePage: React.FC = () => {
                 </SxBox>
 
                 <SxBox height="50vh">
-                <AppPreview imgSrc="/img/uncertain_geostatistics.png" link="/uncertain" reverse animate>
+                    <AppPreview imgSrc="/img/kriging_application.png" link="/kriging" reverse animate>
+                        <Typography variant="h3" component="div">Kriging Application</Typography>
+                        <Typography variant="body1" component="p" sx={{maxWidth: 500}}>
+                            This chapter is dedicated to the different Kriging algorithms.
+                            Use one of the many prepared datasets to jump directly into spatial interpolation. 
+                        </Typography>
+                        <Alert severity="info">It is highly recommended to company the application with geostatistical literature.</Alert>
+                    </AppPreview>
+                </SxBox>
+
+                <SxBox height="50vh">
+                <AppPreview imgSrc="/img/uncertain_geostatistics.png" link="/uncertain" animate>
                         <Typography variant="h3" component="div">Uncertain Geostatistics</Typography>
                         <Typography variant="body1" component="p" sx={{maxWidth: 500}}>
                             Start this chapter from SciKit-Uncertainty as a standalone application to
